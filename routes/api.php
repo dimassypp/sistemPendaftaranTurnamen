@@ -36,10 +36,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/tournaments/{id}',    [TournamentController::class, 'update']);
         Route::delete('/tournaments/{id}', [TournamentController::class, 'destroy']);
 
-        // Announcement (biasanya admin)
+        // Announcement (admin)
         Route::post('/announcements',        [AnnouncementController::class, 'store']);
         Route::put('/announcements/{id}',    [AnnouncementController::class, 'update']);
         Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
+        
+        // Team (Admin)
+        Route::get('/teams',         [TeamController::class, 'index']);
+        Route::put('/teams/{id}',    [TeamController::class, 'update']);
+        Route::delete('/teams/{id}', [TeamController::class, 'destroy']);
     });
 
     // Announcement (public after login)
@@ -49,7 +54,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // Team
     Route::post('/teams',        [TeamController::class, 'store']);
     Route::get('/teams/my',      [TeamController::class, 'my']);
-    Route::get('/teams',         [TeamController::class, 'index']);
-    Route::put('/teams/{id}',    [TeamController::class, 'update']);
-    Route::delete('/teams/{id}', [TeamController::class, 'destroy']);
+
 });
