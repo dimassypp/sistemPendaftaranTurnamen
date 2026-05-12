@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // Register
     public function register(Request $request)
     {
         $request->validate([
@@ -35,7 +34,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // Login
     public function login(Request $request)
     {
         $request->validate([
@@ -59,7 +57,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // Logout
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -69,7 +66,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // Data user yang sedang login
     public function me(Request $request)
     {
         return response()->json([

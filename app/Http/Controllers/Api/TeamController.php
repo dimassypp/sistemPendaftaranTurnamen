@@ -5,66 +5,93 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Team;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TeamController extends Controller
 {
-    // CREATE
-    public function store(Request $req)
+    // READ ALL (Admin only - via route middleware)
+    public function index()
     {
-        $req->validate([
-            'team_name' => 'required',
+        try {
+            $teams = Team::with(['user', 'tournament'])->get();
+            return response()->json($teams);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    
+    // CREATE - Fixed: use $request->user()->id instead of auth()->id()
+    public function store(Request $request)
+    {
+        $request->validate([
+            'team_name' => 'required|string|max:100',
             'tournament_id' => 'required|exists:tournaments,id'
         ]);
 
         $logoPath = null;
 
-        if ($req->hasFile('logo')) {
-            $logoPath = $req->file('logo')->store('teams','public');
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('teams', 'public');
         }
 
         $team = Team::create([
-            'user_id' => auth()->id(),
-            'tournament_id' => $req->tournament_id,
-            'team_name' => $req->team_name,
+            // ✅ Fixed: Use $request->user()->id (null-safe with auth:sanctum middleware)
+            'user_id' => $request->user()->id,
+            'tournament_id' => $request->tournament_id,
+            'team_name' => $request->team_name,
             'logo' => $logoPath
         ]);
 
-        return response()->json($team);
+        return response()->json($team, 201);
     }
 
-    // READ (punya sendiri)
-    public function my()
+    // READ (punya sendiri) - Fixed: add Request parameter + null-safe access
+    public function my(Request $request)
     {
-        return Team::where('user_id', auth()->id())
+        // ✅ Fixed: Use $request->user()?->id with null-safe operator
+        return Team::where('user_id', $request->user()->id)
             ->with('tournament')
             ->get();
     }
 
-    // READ (admin semua)
-    public function index()
-    {
-        return Team::with(['user','tournament'])->get();
-    }
-
-    // UPDATE
-    public function update(Request $req, $id)
+    // UPDATE - Added authorization check + null-safe file handling
+    public function update(Request $request, $id)
     {
         $team = Team::findOrFail($id);
 
-        if ($req->hasFile('logo')) {
-            $team->logo = $req->file('logo')->store('teams','public');
+        // ✅ Optional: Ensure only owner or admin can update
+        if ($request->user()->id !== $team->user_id && $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Forbidden.'], 403);
         }
 
-        $team->team_name = $req->team_name;
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($team->logo) {
+                Storage::disk('public')->delete($team->logo);
+            }
+            $team->logo = $request->file('logo')->store('teams', 'public');
+        }
+
+        $team->team_name = $request->team_name;
         $team->save();
 
         return response()->json($team);
     }
 
-    // DELETE
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        Team::destroy($id);
-        return response()->json(['message'=>'Deleted']);
+        $team = Team::findOrFail($id);
+
+        if ($request->user()->id !== $team->user_id && $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        if ($team->logo) {
+            Storage::disk('public')->delete($team->logo);
+        }
+
+        $team->delete();
+        
+        return response()->json(['message' => 'Deleted']);
     }
 }

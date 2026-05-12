@@ -45,7 +45,7 @@ class AnnouncementController extends Controller
         ]);
 
         $announcement = Announcement::create([
-            'user_id' => auth()->id(),
+            'user_id' => $request->user()->id,
             'title'   => $request->title,
             'content' => $request->content,
         ]);
