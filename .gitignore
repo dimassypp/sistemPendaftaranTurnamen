@@ -54,3 +54,9 @@ Homestead.json
 .phpactor.json
 auth.json
 >>>>>>> 9479275c657993ee235e505b877bda503b58a798
+
+# === FRONTEND ===
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
