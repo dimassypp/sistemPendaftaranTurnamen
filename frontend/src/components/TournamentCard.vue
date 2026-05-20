@@ -12,6 +12,11 @@
       <h3 class="t-title">{{ tournament.name }}</h3>
       <p class="t-date">{{ formatSchedule(tournament.schedule) }}</p>
       <p class="t-desc">{{ tournament.description || 'Tidak ada deskripsi.' }}</p>
+
+      <div v-if="isAdmin" class="t-admin-actions" @click.stop>
+        <button class="btn-edit" @click="$emit('edit', tournament)">Edit</button>
+        <button class="btn-delete" @click="$emit('delete', tournament)">Hapus</button>
+      </div>
     </div>
   </div>
 </template>
@@ -23,6 +28,7 @@ export default {
     tournament: { type: Object, required: true },
     isAdmin: { type: Boolean, required: true }
   },
+  emits: ['select', 'edit', 'delete'],
   methods: {
     formatSchedule(schedule) {
       if (!schedule) return '-'
@@ -65,5 +71,33 @@ export default {
   overflow: hidden; display: -webkit-box;
   -webkit-line-clamp: 2; -webkit-box-orient: vertical;
 }
-.t-admin-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 10px; }
+
+.t-admin-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+.btn-edit, .btn-delete {
+  flex: 1;
+  padding: 6px 0;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  font-family: inherit;
+}
+.btn-edit:hover, .btn-delete:hover { opacity: 0.8; }
+.btn-edit {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  color: var(--c-text);
+}
+.btn-delete {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  color: var(--c-error);
+}
 </style>

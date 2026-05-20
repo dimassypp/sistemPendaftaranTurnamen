@@ -35,7 +35,6 @@ class TeamController extends Controller
         }
 
         $team = Team::create([
-            // ✅ Fixed: Use $request->user()->id (null-safe with auth:sanctum middleware)
             'user_id' => $request->user()->id,
             'tournament_id' => $request->tournament_id,
             'team_name' => $request->team_name,
@@ -45,21 +44,17 @@ class TeamController extends Controller
         return response()->json($team, 201);
     }
 
-    // READ (punya sendiri) - Fixed: add Request parameter + null-safe access
     public function my(Request $request)
     {
-        // ✅ Fixed: Use $request->user()?->id with null-safe operator
         return Team::where('user_id', $request->user()->id)
             ->with('tournament')
             ->get();
     }
 
-    // UPDATE - Added authorization check + null-safe file handling
     public function update(Request $request, $id)
     {
         $team = Team::findOrFail($id);
 
-        // ✅ Optional: Ensure only owner or admin can update
         if ($request->user()->id !== $team->user_id && $request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden.'], 403);
         }

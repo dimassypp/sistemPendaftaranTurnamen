@@ -14,8 +14,8 @@
         :tournament="t"
         :isAdmin="isAdmin"
         @select="$emit('select-tournament', $event)"
-        @edit-tournament="$emit('edit-tournament', $event)"
-        @delete-tournament="$emit('delete-tournament', $event)"
+        @edit="$emit('edit-tournament', $event)"
+        @delete="$emit('delete-tournament', $event.id)"
       />
     </div>
   </div>
@@ -30,7 +30,8 @@ export default {
     tournaments: { type: Array, required: true },
     loading: { type: Boolean, required: true },
     isAdmin: { type: Boolean, required: true }
-  }
+  },
+  emits: ['select-tournament', 'edit-tournament', 'delete-tournament']
 }
 </script>
 
