@@ -85,6 +85,7 @@
             :announcements="announcements"
             :loading="loadingAnnouncements"
             :isAdmin="isAdmin"
+            @select-announcement="selectedAnnouncementDetail = $event"
             @edit-announcement="openEditAnnouncement"
             @delete-announcement="deleteAnnouncement"
           />
@@ -180,6 +181,14 @@
         @close="selectedTournamentDetail = null"
         @register="submitTeamFromDetail"
       />
+      <AnnouncementDetailModal
+        v-if="selectedAnnouncementDetail"
+        :announcement="selectedAnnouncementDetail"
+        :isAdmin="isAdmin"
+        @close="selectedAnnouncementDetail = null"
+        @edit="openEditAnnouncementFromDetail"
+        @delete="deleteAnnouncementFromDetail"
+      />
     </div>
   </div>
 </template>
@@ -193,6 +202,7 @@ import TeamForm from './components/TeamForm.vue'
 import TeamList from './components/TeamList.vue'
 import AnnouncementForm from './components/AnnouncementForm.vue'
 import AnnouncementList from './components/AnnouncementList.vue'
+import AnnouncementDetailModal from './components/AnnouncementDetailModal.vue'
 import Modal from './components/Modal.vue'
 import TournamentDetailModal from './components/TournamentDetailModal.vue'
 
@@ -205,8 +215,9 @@ export default {
     TournamentForm, TournamentList,
     TeamForm, TeamList,
     AnnouncementForm, AnnouncementList,
-    Modal, TournamentDetailModal
+    Modal, TournamentDetailModal,AnnouncementDetailModal
   },
+
   data() {
     return {
       showRegister: false,
@@ -232,6 +243,7 @@ export default {
       announcements: [], loadingAnnouncements: false,
       announcementTitle: '', announcementContent: '',
       isEditAnnouncement: false, selectedAnnouncementId: null,
+      selectedAnnouncementDetail: null,
 
       modal: null,
       message: '', error: ''
@@ -554,6 +566,25 @@ export default {
         const result = await res.json()
         if (!res.ok) { this.setError(result.message || 'Gagal'); return }
         this.setMessage('Pengumuman dihapus.'); this.fetchAnnouncements()
+      } catch { this.setError('Tidak dapat terhubung ke server') }
+    },
+    openEditAnnouncementFromDetail(a) {
+      this.selectedAnnouncementDetail = null
+      this.$nextTick(() => {
+        this.openEditAnnouncement(a)
+      })
+    },
+    async deleteAnnouncementFromDetail(id) {
+      if (!confirm('Hapus pengumuman ini?')) return
+      try {
+        const res = await fetch(`${BASE}/announcements/${id}`, {
+          method: 'DELETE', headers: this.authHeaders()
+        })
+        const result = await res.json()
+        if (!res.ok) { this.setError(result.message || 'Gagal'); return }
+        this.setMessage('Pengumuman dihapus.')
+        this.selectedAnnouncementDetail = null
+        this.fetchAnnouncements()
       } catch { this.setError('Tidak dapat terhubung ke server') }
     },
     openTournamentDetail(tournament) {

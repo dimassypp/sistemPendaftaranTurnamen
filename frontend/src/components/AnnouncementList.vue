@@ -6,25 +6,27 @@
     </div>
 
     <div v-else-if="announcements.length === 0" class="state-box">
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      </svg>
       <span>Belum ada pengumuman</span>
     </div>
 
     <div v-else class="announcement-list">
-      <div v-for="a in announcements" :key="a.id" class="announcement-card">
+      <div
+        v-for="a in announcements"
+        :key="a.id"
+        class="announcement-card"
+        @click="$emit('select-announcement', a)"
+      >
         <div class="ann-header">
           <div class="ann-dot"></div>
           <h3 class="ann-title">{{ a.title }}</h3>
           <span class="ann-author">{{ a.user ? a.user.name : '-' }}</span>
-          <div v-if="isAdmin" class="ann-actions">
+          <div v-if="isAdmin" class="ann-actions" @click.stop>
             <button class="btn-ghost btn-sm" @click="$emit('edit-announcement', a)">Edit</button>
             <button class="btn-danger btn-sm" @click="$emit('delete-announcement', a.id)">Hapus</button>
           </div>
         </div>
-        <p class="ann-content">{{ a.content }}</p>
+        <p class="ann-preview">{{ a.content }}</p>
+        <span class="ann-read-more">Baca selengkapnya</span>
       </div>
     </div>
   </div>
@@ -43,14 +45,20 @@ export default {
 
 <style scoped>
 .announcement-list { display: flex; flex-direction: column; gap: 10px; }
+
 .announcement-card {
   background: var(--c-card);
   border: 1px solid var(--c-border);
   border-radius: 12px;
   padding: 14px 18px;
-  transition: border-color 0.2s;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
 }
-.announcement-card:hover { border-color: rgba(124,106,246,0.3); }
+.announcement-card:hover {
+  border-color: rgba(124,106,246,0.35);
+  transform: translateY(-1px);
+}
+
 .ann-header {
   display: flex; align-items: center;
   gap: 10px; margin-bottom: 8px;
@@ -74,8 +82,17 @@ export default {
   flex-shrink: 0;
 }
 .ann-actions { display: flex; gap: 6px; flex-shrink: 0; }
-.ann-content {
+
+.ann-preview {
   font-size: 13px; color: var(--c-sub);
-  line-height: 1.7; margin: 0;
+  line-height: 1.6; margin: 0 0 8px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.ann-read-more {
+  font-size: 12px; color: var(--c-accent);
+  font-weight: 600;
 }
 </style>
