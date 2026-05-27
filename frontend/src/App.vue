@@ -373,63 +373,47 @@ export default {
     },
     async submitTournament() {
       try {
-        // Client-side validation (extra safety)
-        if (!this.tournamentName.trim() || this.tournamentName.trim().length < 3) {
-          this.setError('Nama turnamen minimal 3 karakter')
-          return
-        }
-        if (!this.tournamentSchedule.trim()) {
-          this.setError('Jadwal turnamen harus diisi')
-          return
-        }
-        if (this.tournamentName.trim().length > 100) {
-          this.setError('Nama turnamen maksimal 100 karakter')
-          return
-        }
-
         const url = this.isEditTournament
           ? `${BASE}/tournaments/${this.selectedTournamentId}`
           : `${BASE}/tournaments`
-        
+
         const formData = new FormData()
         formData.append('name', this.tournamentName.trim())
         formData.append('schedule', this.tournamentSchedule.trim())
         formData.append('description', this.tournamentDescription.trim() || '')
-        
-        // Only append poster if it's a new file (not existing)
+
         if (this.tournamentPoster instanceof File) {
           formData.append('poster_image', this.tournamentPoster)
         }
-        
+
         if (this.isEditTournament) {
           formData.append('_method', 'PUT')
         }
-        
-        const res = await fetch(url, { 
-          method: 'POST', 
-          headers: this.authHeaders(), 
-          body: formData 
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: this.authHeaders(),
+          body: formData
         })
-        
+
         const result = await res.json()
-        
-        if (!res.ok) { 
-          // Handle Laravel validation errors
-          const errorMsg = result.message || 
-                          result.errors?.name?.[0] || 
+
+        if (!res.ok) {
+          const errorMsg = result.message ||
+                          result.errors?.name?.[0] ||
                           result.errors?.schedule?.[0] ||
                           'Gagal memproses turnamen'
           this.setError(errorMsg)
-          return 
+          return
         }
-        
+
         this.setMessage(this.isEditTournament ? 'Turnamen diupdate.' : 'Turnamen ditambahkan.')
         this.closeModal()
         this.fetchTournaments()
-        
-      } catch (e) { 
+
+      } catch (e) {
         console.error('Submit tournament error:', e)
-        this.setError('Tidak dapat terhubung ke server') 
+        this.setError('Tidak dapat terhubung ke server')
       }
     },
     
@@ -475,43 +459,34 @@ export default {
     },
     async submitTeam() {
       try {
-        if (!this.teamTournamentId) {
-          this.setError('Pilih turnamen terlebih dahulu')
-          return
-        }
-        if (!this.teamName.trim() || this.teamName.trim().length < 2) {
-          this.setError('Nama tim minimal 2 karakter')
-          return
-        }
-
         const formData = new FormData()
         formData.append('tournament_id', this.teamTournamentId)
         formData.append('team_name', this.teamName.trim())
         if (this.teamLogo instanceof File) {
           formData.append('logo', this.teamLogo)
         }
-        
-        const res = await fetch(`${BASE}/teams`, { 
-          method: 'POST', 
-          headers: this.authHeaders(), 
-          body: formData 
+
+        const res = await fetch(`${BASE}/teams`, {
+          method: 'POST',
+          headers: this.authHeaders(),
+          body: formData
         })
         const result = await res.json()
-        
-        if (!res.ok) { 
+
+        if (!res.ok) {
           this.setError(result.message || result.errors?.team_name?.[0] || 'Gagal mendaftar')
-          return 
+          return
         }
-        
+
         this.setMessage('Tim berhasil didaftarkan!')
         this.teamTournamentId = ''
         this.teamName = ''
         this.teamLogo = null
         this.fetchTeams()
         this.closeModal()
-      } catch (e) { 
+      } catch (e) {
         console.error('Submit team error:', e)
-        this.setError('Tidak dapat terhubung ke server') 
+        this.setError('Tidak dapat terhubung ke server')
       }
     },
     async deleteTeam(id) {
@@ -541,15 +516,21 @@ export default {
           : `${BASE}/announcements`
         const method = this.isEditAnnouncement ? 'PUT' : 'POST'
         const res = await fetch(url, {
-          method, headers: this.jsonHeaders(),
+          method,
+          headers: this.jsonHeaders(),
           body: JSON.stringify({ title: this.announcementTitle, content: this.announcementContent })
         })
         const result = await res.json()
-        if (!res.ok) { this.setError(result.message || 'Gagal'); return }
+        if (!res.ok) {
+          this.setError(result.message || result.errors?.title?.[0] || result.errors?.content?.[0] || 'Gagal')
+          return
+        }
         this.setMessage(this.isEditAnnouncement ? 'Pengumuman diupdate.' : 'Pengumuman dibuat.')
         this.closeModal()
         this.fetchAnnouncements()
-      } catch { this.setError('Tidak dapat terhubung ke server') }
+      } catch {
+        this.setError('Tidak dapat terhubung ke server')
+      }
     },
     startEditAnnouncement(a) {
       this.announcementTitle = a.title; this.announcementContent = a.content

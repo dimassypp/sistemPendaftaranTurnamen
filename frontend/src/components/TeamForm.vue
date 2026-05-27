@@ -4,21 +4,25 @@
       <label>Pilih Turnamen</label>
       <select
         :value="tournamentId"
-        @change="$emit('update:tournamentId', $event.target.value)"
+        @change="$emit('update:tournamentId', $event.target.value); errors.tournamentId = ''"
+        :class="{ 'input-error': errors.tournamentId }"
       >
         <option value="">— Pilih turnamen —</option>
         <option v-for="t in tournaments" :key="t.id" :value="t.id">
           {{ t.name }}
         </option>
       </select>
+      <p v-if="errors.tournamentId" class="field-error">{{ errors.tournamentId }}</p>
     </div>
     <div class="field-group">
       <label>Nama Tim</label>
       <input
         :value="teamName"
-        @input="$emit('update:teamName', $event.target.value)"
+        @input="$emit('update:teamName', $event.target.value); errors.teamName = ''"
         placeholder="Masukkan nama tim kamu"
+        :class="{ 'input-error': errors.teamName }"
       />
+      <p v-if="errors.teamName" class="field-error">{{ errors.teamName }}</p>
     </div>
     <div class="field-group">
       <label>Logo Tim</label>
@@ -34,7 +38,7 @@
     </div>
     <div class="form-actions">
       <button class="btn-ghost" @click="$emit('cancel')">Batal</button>
-      <button class="btn-primary" @click="$emit('submit')">Daftar Sekarang</button>
+      <button class="btn-primary" @click="handleSubmit">Daftar Sekarang</button>
     </div>
   </div>
 </template>
@@ -44,11 +48,14 @@ export default {
   name: 'TeamForm',
   props: {
     tournamentId: { type: [String, Number], required: true },
-    teamName: { type: String, required: true },
-    tournaments: { type: Array, required: true }
+    teamName:     { type: String, required: true },
+    tournaments:  { type: Array, required: true }
   },
   data() {
-    return { selectedFileName: '' }
+    return {
+      selectedFileName: '',
+      errors: { tournamentId: '', teamName: '' }
+    }
   },
   computed: {
     logoLabel() {
@@ -62,7 +69,40 @@ export default {
         this.selectedFileName = file.name
         this.$emit('update:logo', file)
       }
+    },
+    handleSubmit() {
+      this.errors = { tournamentId: '', teamName: '' }
+      let valid = true
+
+      if (!this.tournamentId) {
+        this.errors.tournamentId = 'Pilih turnamen terlebih dahulu'
+        valid = false
+      }
+
+      if (!this.teamName.trim()) {
+        this.errors.teamName = 'Nama tim tidak boleh kosong'
+        valid = false
+      } else if (this.teamName.trim().length < 2) {
+        this.errors.teamName = 'Nama tim minimal 2 karakter'
+        valid = false
+      }
+
+      if (!valid) return
+      this.$emit('submit')
     }
   }
 }
 </script>
+
+<style scoped>
+.field-error {
+  font-size: 12px;
+  color: var(--c-error);
+  margin-top: 6px;
+  font-weight: 500;
+}
+.input-error {
+  border-color: var(--c-error) !important;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.12) !important;
+}
+</style>

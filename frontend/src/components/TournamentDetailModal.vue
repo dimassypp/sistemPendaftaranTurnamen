@@ -34,7 +34,7 @@
                 v-model="localTeamName"
                 placeholder="Masukkan nama tim kamu"
                 type="text"
-                :class="{ 'input-error': errors.teamName }"
+                :class="{ 'input-t-error': errors.teamName }"
                 @input="errors.teamName = ''"
               />
               <p v-if="errors.teamName" class="field-error">{{ errors.teamName }}</p>
