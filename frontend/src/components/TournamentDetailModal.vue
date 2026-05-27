@@ -23,7 +23,7 @@
           </div>
 
           <!-- Form daftar (member only) -->
-          <div v-if="showRegister" class="register-section">
+          <div v-if="showRegister && !alreadyRegistered" class="register-section">
             <div class="register-divider">
               <span>Daftarkan Tim Kamu</span>
             </div>

@@ -24,21 +24,31 @@ class TeamController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'team_name' => 'required|string|max:100',
+            'team_name'     => 'required|string|max:100',
             'tournament_id' => 'required|exists:tournaments,id'
         ]);
 
-        $logoPath = null;
+        // Cek duplikat
+        $sudahDaftar = Team::where('user_id', $request->user()->id)
+            ->where('tournament_id', $request->tournament_id)
+            ->exists();
 
+        if ($sudahDaftar) {
+            return response()->json([
+                'message' => 'Tim kamu sudah terdaftar di turnamen ini.'
+            ], 422);
+        }
+
+        $logoPath = null;
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('teams', 'public');
         }
 
         $team = Team::create([
-            'user_id' => $request->user()->id,
+            'user_id'       => $request->user()->id,
             'tournament_id' => $request->tournament_id,
-            'team_name' => $request->team_name,
-            'logo' => $logoPath
+            'team_name'     => $request->team_name,
+            'logo'          => $logoPath
         ]);
 
         return response()->json($team, 201);
